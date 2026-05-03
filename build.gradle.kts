@@ -15,22 +15,19 @@ kotlin {
     }
 }
 
-tasks.register("runWasm") {
-    dependsOn("wasmWasiNodeProductionRun")
+tasks.register<Exec>("runWasm") {
+    dependsOn("compileProductionExecutableKotlinWasmWasiOptimize")
     group = "application"
     description = "Compiles and runs the Kotlin/Wasm WASI binary using Node.js"
 
-    doLast {
-        val isWindows = System.getProperty("os.name").lowercase().contains("windows")
-        val node = if (isWindows) "node.exe" else "node"
+    val isWindows = System.getProperty("os.name").lowercase().contains("windows")
+    val node = if (isWindows) "node.exe" else "node"
 
-        ProcessBuilder(
-            node,
-            "--experimental-wasi-unstable-preview1",
-            "${projectDir}/run.mjs"
-        )
-            .inheritIO()
-            .start()
-            .waitFor()
-    }
+    commandLine(
+        node,
+        "--experimental-wasi-unstable-preview1",
+        "${projectDir}/run.mjs"
+    )
+
+    standardInput = System.`in`
 }
