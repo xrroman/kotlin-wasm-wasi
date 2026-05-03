@@ -18,27 +18,13 @@ kotlin {
 tasks.register<Exec>("runWasm") {
     dependsOn("compileProductionExecutableKotlinWasmWasiOptimize")
     group = "application"
-    description = "Compiles and runs the Kotlin/Wasm WASI binary using Wasmtime or Node.js"
 
-    val isWindows = System.getProperty("os.name").lowercase().contains("windows")
+    // Esto es vital: permite que lo que escribas en la consola llegue a Wasm
+    standardInput = System.`in`
 
-    val wasmFile = layout.buildDirectory
-        .file("compileSync/wasmWasi/main/productionExecutable/optimized/kotlin-wasm-wasi-wasm-wasi.wasm")
-        .get().asFile
-
-    if (isWindows) {
-        commandLine(
-            "node",
-            "--experimental-wasi-unstable-preview1",
-            "${projectDir}/run.mjs"
-        )
-        standardInput = System.`in`
-    } else {
-        val whichWasmtime = ProcessBuilder("which", "wasmtime")
-            .also { it.environment()["PATH"] = "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:${System.getenv("HOME")}/.wasmtime/bin" }
-            .start().inputStream.bufferedReader().readLine()
-            ?: error("wasmtime not found. Install it from https://wasmtime.dev")
-
-        commandLine(whichWasmtime, "--dir=.", wasmFile.absolutePath)
-    }
+    commandLine(
+        "node",
+        "--experimental-wasi-unstable-preview1",
+        "${projectDir}/run.mjs"
+    )
 }
