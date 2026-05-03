@@ -13,11 +13,6 @@ kotlin {
         nodejs()
         binaries.executable()
     }
-
-    sourceSets {
-        val wasmWasiMain by getting
-        val wasmWasiTest by getting
-    }
 }
 
 tasks.register<Exec>("runWasm") {
@@ -25,8 +20,11 @@ tasks.register<Exec>("runWasm") {
     group = "application"
     description = "Compiles and runs the Kotlin/Wasm WASI binary using Node.js"
 
+    val isWindows = System.getProperty("os.name").lowercase().contains("windows")
+    val node = if (isWindows) "node.exe" else "node"
+
     commandLine(
-        "node",
+        node,
         "--experimental-wasi-unstable-preview1",
         "${projectDir}/run.mjs"
     )
