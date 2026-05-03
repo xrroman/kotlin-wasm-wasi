@@ -34,6 +34,11 @@ tasks.register<Exec>("runWasm") {
         )
         standardInput = System.`in`
     } else {
-        commandLine("wasmtime", "--dir=.", wasmFile.absolutePath)
+        val whichWasmtime = ProcessBuilder("which", "wasmtime")
+            .also { it.environment()["PATH"] = "/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:${System.getenv("HOME")}/.wasmtime/bin" }
+            .start().inputStream.bufferedReader().readLine()
+            ?: error("wasmtime not found. Install it from https://wasmtime.dev")
+
+        commandLine(whichWasmtime, "--dir=.", wasmFile.absolutePath)
     }
 }
