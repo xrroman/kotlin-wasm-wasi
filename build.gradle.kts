@@ -16,10 +16,12 @@ kotlin {
 }
 
 tasks.register<Exec>("runWasm") {
-    dependsOn("compileProductionExecutableKotlinWasmWasiOptimize")
     group = "application"
+    description = "Runs the Wasm/WASI binary using Node.js"
 
-    // Esto es vital: permite que lo que escribas en la consola llegue a Wasm
+    dependsOn("compileProductionExecutableKotlinWasmWasiOptimize")
+
+    // Forwards terminal input to the Wasm process
     standardInput = System.`in`
 
     commandLine(
