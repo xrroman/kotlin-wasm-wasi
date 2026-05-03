@@ -18,16 +18,22 @@ kotlin {
 tasks.register<Exec>("runWasm") {
     dependsOn("compileProductionExecutableKotlinWasmWasiOptimize")
     group = "application"
-    description = "Compiles and runs the Kotlin/Wasm WASI binary using Node.js"
+    description = "Compiles and runs the Kotlin/Wasm WASI binary using Wasmtime or Node.js"
 
     val isWindows = System.getProperty("os.name").lowercase().contains("windows")
-    val node = if (isWindows) "node.exe" else "node"
 
-    commandLine(
-        node,
-        "--experimental-wasi-unstable-preview1",
-        "${projectDir}/run.mjs"
-    )
+    val wasmFile = layout.buildDirectory
+        .file("compileSync/wasmWasi/main/productionExecutable/optimized/kotlin-wasm-wasi-wasm-wasi.wasm")
+        .get().asFile
 
-    standardInput = System.`in`
+    if (isWindows) {
+        commandLine(
+            "node",
+            "--experimental-wasi-unstable-preview1",
+            "${projectDir}/run.mjs"
+        )
+        standardInput = System.`in`
+    } else {
+        commandLine("wasmtime", "--dir=.", wasmFile.absolutePath)
+    }
 }
